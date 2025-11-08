@@ -17,8 +17,14 @@ export default function Checkout() {
       body: JSON.stringify({ items: cart, email }),
     });
 
+    if (!res.ok) {
+      const err = await res.json();
+      alert("Checkout failed: " + (err.message || "Unknown error"));
+      return;
+    }
+
     const data = await res.json();
-    window.location = data.url;
+    window.location = data.url; // safe redirect
   }
 
   const total = cart.reduce((sum, item) => sum + item.price, 0);
