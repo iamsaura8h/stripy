@@ -12,14 +12,14 @@ async function createCheckoutSession(items, email) {
     quantity: 1,
   }));
 
-  const session = await stripe.checkout.sessions.create({
-    payment_method_types: ["card"],
-    mode: "payment",
-    line_items: lineItems,
-    customer_email: email,
-    success_url: "http://localhost:5173/success",
-    cancel_url: "http://localhost:5173/failure",
-  });
+ const session = await stripe.checkout.sessions.create({
+  payment_method_types: ["upi"], 
+  mode: "payment",
+  line_items: lineItems,
+  customer_email: email,
+  success_url: "http://localhost:5173/success",
+  cancel_url: "http://localhost:5173/failure",
+});
 
   return session;
 }
