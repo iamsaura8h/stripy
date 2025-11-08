@@ -1,31 +1,25 @@
-// server.js
+require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const dotenv = require("dotenv");
-dotenv.config();
-
 const Stripe = require("stripe");
 
-// ⚡ Make sure to use the correct Stripe API version
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2022-11-15",
-});
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-//  CONNECT MONGO
+// ------------------ MONGO CONNECTION ------------------
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB Connected"))
   .catch((err) => {
-    console.log("❌ MongoDB Connection Failed:", err.message);
+    console.error("❌ MongoDB Connection Failed:", err.message);
     process.exit(1);
   });
 
-//  ORDER SCHEMA
+// ------------------ ORDER SCHEMA ------------------
 const orderSchema = new mongoose.Schema({
   items: Array,
   email: String,
@@ -34,7 +28,7 @@ const orderSchema = new mongoose.Schema({
 });
 const Order = mongoose.model("Order", orderSchema);
 
-//  MOCK PRODUCTS
+// ------------------ MOCK PRODUCTS ------------------
 const products = [
   { id: 1, name: "Zara Top", price: 1200 },
   { id: 2, name: "Levis Jeans", price: 2200 },
@@ -42,12 +36,12 @@ const products = [
   { id: 4, name: "Nike Jersey", price: 2600 },
 ];
 
-//  GET PRODUCTS
+// ------------------ GET PRODUCTS ------------------
 app.get("/api/products", (req, res) => {
   res.json(products);
 });
 
-//  CREATE CHECKOUT SESSION
+// ------------------ CREATE CHECKOUT SESSION ------------------
 app.post("/api/checkout", async (req, res) => {
   try {
     const { items, email } = req.body;
@@ -56,7 +50,7 @@ app.post("/api/checkout", async (req, res) => {
       price_data: {
         currency: "inr",
         product_data: { name: item.name },
-        unit_amount: item.price * 100,
+        unit_amount: item.price * 100, // Stripe expects smallest currency unit
       },
       quantity: 1,
     }));
@@ -72,52 +66,36 @@ app.post("/api/checkout", async (req, res) => {
 
     res.json({ url: session.url });
   } catch (err) {
-    console.log(err);
+    console.error(err);
     res.status(500).json({ message: "Error creating Stripe session" });
   }
 });
 
-//  SAVE SUCCESS ORDER
+// ------------------ SAVE SUCCESS ORDER ------------------
 app.post("/api/payment-success", async (req, res) => {
+  const { items, email, transactionId } = req.body;
   try {
-    const { items, email, transactionId } = req.body;
-
-    await Order.create({
-      items,
-      email,
-      transactionId,
-      status: "successful",
-    });
-
+    await Order.create({ items, email, transactionId, status: "successful" });
     res.json({ message: "Order saved successfully" });
   } catch (err) {
     res.status(500).json({ message: "Error saving order" });
   }
 });
 
-//  SAVE FAILED ORDER
+// ------------------ SAVE FAILED ORDER ------------------
 app.post("/api/payment-failed", async (req, res) => {
+  const { items, email, transactionId } = req.body;
   try {
-    const { items, email, transactionId } = req.body;
-
-    await Order.create({
-      items,
-      email,
-      transactionId,
-      status: "failed",
-    });
-
+    await Order.create({ items, email, transactionId, status: "failed" });
     res.json({ message: "Order saved as failed" });
   } catch (err) {
     res.status(500).json({ message: "Error saving failed order" });
   }
 });
 
-// health route
-app.get("/", (req, res) => {
-  res.send("Backend running ✅");
-});
+// ------------------ HEALTH CHECK ------------------
+app.get("/", (req, res) => res.send("Backend running ✅"));
 
-// SERVER
+// ------------------ START SERVER ------------------
 const PORT = 3000;
 app.listen(PORT, () => console.log(`Server running on PORT ${PORT}`));
