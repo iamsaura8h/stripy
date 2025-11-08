@@ -17,14 +17,17 @@ export default function Checkout() {
       body: JSON.stringify({ items: cart, email }),
     });
 
-    if (!res.ok) {
-      const err = await res.json();
-      alert("Checkout failed: " + (err.message || "Unknown error"));
+    const data = await res.json();
+
+    // ✅ If Stripe fails (fallback order)
+    if (data.fallback) {
+      alert("Payment system unavailable. Your order is saved as pending.");
+      window.location = "/failure";
       return;
     }
 
-    const data = await res.json();
-    window.location = data.url; // safe redirect
+    // ✅ Stripe works
+    window.location = data.url;
   }
 
   const total = cart.reduce((sum, item) => sum + item.price, 0);

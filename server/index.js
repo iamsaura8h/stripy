@@ -43,14 +43,14 @@ app.get("/api/products", (req, res) => {
 
 // ------------------ CREATE CHECKOUT SESSION ------------------
 app.post("/api/checkout", async (req, res) => {
-  try {
-    const { items, email } = req.body;
+  const { items, email } = req.body;
 
+  try {
     const lineItems = items.map((item) => ({
       price_data: {
         currency: "inr",
         product_data: { name: item.name },
-        unit_amount: item.price * 100, // Stripe expects smallest currency unit
+        unit_amount: item.price * 100,
       },
       quantity: 1,
     }));
@@ -64,10 +64,24 @@ app.post("/api/checkout", async (req, res) => {
       cancel_url: "http://localhost:5173/failure",
     });
 
-    res.json({ url: session.url });
+    return res.json({ url: session.url });
+
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Error creating Stripe session" });
+    console.error("Stripe failed:", err.message);
+
+    const fakeTransactionId = "txn_" + Math.random().toString(36).slice(2);
+
+    await Order.create({
+      items,
+      email,
+      transactionId: fakeTransactionId,
+      status: "pending",
+    });
+
+    return res.json({
+      fallback: true,
+      message: "Payment gateway unavailable. Order saved as pending.",
+    });
   }
 });
 

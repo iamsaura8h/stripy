@@ -18,7 +18,7 @@ export default function LandingPage() {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">🛍️ Products</h1>
+      <h1 className="text-2xl font-bold mb-6">Available Products</h1>
 
       {products.length === 0 ? (
         <p className="text-gray-500 text-sm">Loading products...</p>
