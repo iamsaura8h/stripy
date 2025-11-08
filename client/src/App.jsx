@@ -1,16 +1,17 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+// src/App.jsx
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navbar from './components/navbar'
-function App() {
+import Landing from "./pages/LandingPage";
+import Checkout from "./pages/Checkout";
 
-
+export default function App() {
   return (
-   <div>
-    < Navbar />
-   </div>
-  )
+    <BrowserRouter>
+      <Navbar />
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="/checkout" element={<Checkout />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
-
-export default App
