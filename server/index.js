@@ -2,13 +2,16 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 
+const dotenv =  require('dotenv');
+dotenv.config();
+
 const app = express();
 app.use(cors());
 app.use(express.json());
 
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect("mongodb+srv://husainali7865253:husain2002@clustor.ftwa08a.mongodb.net/?appName=Clustor/saurabh");
+    const conn = await mongoose.connect(process.env.MONGO_URI);
     console.log(`✅ MongoDB Connected `); 
   } catch (error) {
     console.error('❌ MongoDB connection failed:', error.message);
@@ -24,6 +27,7 @@ const products = [
   {id:1,name:"h&m hoodie",price:1200},
 ];
 
+
 // order shchema
 const orderSchema = new mongoose.Schema({
   items:Array,
@@ -32,6 +36,13 @@ const orderSchema = new mongoose.Schema({
   transactionId:String,
 });
 const Order = mongoose.model("Order",orderSchema);
+
+
+// ROUTES
+
+app.get('/api/products',(req,res)=>{
+  res.json(products);
+});
 
 app.get("/", (req, res) => {
   res.send("GET request to the homepage");
