@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useCart } from "../cart-context.jsx";
+import { useCart } from "../context/cart-context.jsx";
 
 export default function LandingPage() {
   const { add, remove, cart } = useCart();

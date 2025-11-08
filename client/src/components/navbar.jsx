@@ -1,6 +1,6 @@
 // src/Navbar.jsx
 import { useState } from "react";
-import { useCart } from "../cart-context";
+import { useCart } from "../context/cart-context";
 import { useNavigate } from "react-router-dom";
 
 export default function Navbar() {
